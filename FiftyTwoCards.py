@@ -31,3 +31,15 @@ def create_cards(conn):
             cur.execute(sql_insert, sql_cards_data)
     conn.commit()
 
+def create_dealer(conn):
+    sql_delete_table = ''' DROP TABLE IF EXISTS dealer; '''
+    sql_create = """ CREATE TABLE IF NOT EXISTS dealer(
+        id integer PRIMARY KEY,
+        card_rank text,
+        card_suit text
+    ); """
+
+    cur = conn.cursor()
+    cur.execute(sql_delete_table)
+    cur.execute(sql_create)
+
