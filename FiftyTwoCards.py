@@ -71,4 +71,16 @@ def get_card(conn, cid):
 
     return cur.fetchall()
 
-    
+def shuffle_cards(conn):
+    sql_delete_dealer_cards = ''' DELETE FROM dealer '''
+
+    card_id_lists = shuffle_numbers()
+    sql_insert = ''' INSERT INTO dealer(card_rank, card_suit) VALUES (?, ?) '''
+
+    cur = conn.cursor()
+    cur.execute(sql_delete_dealer_cards)
+
+    for i in range(0, 52):
+        sql_get_card = get_card(conn, card_id_lists[i])
+        cur.execute(sql_insert, sql_get_card[0])
+    conn.commit()
