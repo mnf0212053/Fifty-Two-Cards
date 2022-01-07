@@ -1,4 +1,5 @@
 import sqlite3
+import numpy as np
 
 con = sqlite3.connect("card52.db")
 
@@ -42,4 +43,27 @@ def create_dealer(conn):
     cur = conn.cursor()
     cur.execute(sql_delete_table)
     cur.execute(sql_create)
+
+def shuffle_numbers():
+    rand_nums = []
+    
+    for i in range(0, 52):
+        rand_num = np.random.randint(1, 1000)
+        while rand_nums.__contains__(rand_num):
+            rand_num = np.random.randint(1, 1000)
+        rand_nums.append(rand_num)
+
+    rand_nums_sorted = sorted(rand_nums)
+    rand_52 = []
+
+    for i in range(0, len(rand_nums)):
+        for j in range(0, len(rand_nums_sorted)):
+            if rand_nums[i] == rand_nums_sorted[j]:
+                rand_52.append(j + 1)
+
+    return rand_52
+
+
+
+
 
