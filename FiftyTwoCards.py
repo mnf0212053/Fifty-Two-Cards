@@ -63,7 +63,12 @@ def shuffle_numbers():
 
     return rand_52
 
+def get_card(conn, cid):
+    sql_retrieve = ''' SELECT rank, suit FROM cards WHERE id = ?; '''
 
+    cur = conn.cursor()
+    cur.execute(sql_retrieve, (cid,))
 
+    return cur.fetchall()
 
-
+    
