@@ -1,7 +1,8 @@
 import sqlite3
 import numpy as np
 
-con = sqlite3.connect("card52.db")
+def db_connect():
+    return sqlite3.connect("card52.db")
 
 def create_cards(conn):
     sql_delete_table = ''' DROP TABLE IF EXISTS cards; '''
@@ -39,10 +40,48 @@ def create_dealer(conn):
         card_rank text,
         card_suit text
     ); """
+    sql_insert_stats = ''' INSERT INTO stats(character, total_cards) VALUES (?, ?) '''
+    sql_data_stats = ('Dealer', 0)
 
     cur = conn.cursor()
     cur.execute(sql_delete_table)
     cur.execute(sql_create)
+    cur.execute(sql_insert_stats, sql_data_stats)
+    conn.commit()
+
+def create_player(conn):
+    sql_delete_table = ''' DROP TABLE IF EXISTS player; '''
+    sql_create = """ CREATE TABLE IF NOT EXISTS player(
+        id integer PRIMARY KEY,
+        card_rank text,
+        card_suit text
+    ); """
+    sql_insert_stats = ''' INSERT INTO stats(character, total_cards) VALUES (?, ?) '''
+    sql_data_stats = ('Player', 0)
+
+    cur = conn.cursor()
+    cur.execute(sql_delete_table)
+    cur.execute(sql_create)
+    cur.execute(sql_insert_stats, sql_data_stats)
+    conn.commit()
+
+def create_stats(conn):
+    sql_delete_table = ''' DROP TABLE IF EXISTS stats; '''
+    sql_create = """ CREATE TABLE IF NOT EXISTS stats(
+        id integer PRIMARY KEY,
+        character text,
+        total_cards integer
+    ); """
+
+    cur = conn.cursor()
+    cur.execute(sql_delete_table)
+    cur.execute(sql_create)
+
+def init(conn):
+    create_cards(conn)
+    create_stats(conn)
+    create_dealer(conn)
+    create_player(conn)
 
 def shuffle_numbers():
     rand_nums = []
@@ -84,3 +123,9 @@ def shuffle_cards(conn):
         sql_get_card = get_card(conn, card_id_lists[i])
         cur.execute(sql_insert, sql_get_card[0])
     conn.commit()
+
+def get_card_amount(conn, chr):
+    pass
+
+def give_cards_to_player(conn, cnum):
+    pass
