@@ -156,5 +156,18 @@ def update_stats(conn):
         cur.execute(sql_update_stats, sql_update_data)
     conn.commit()
 
-def give_cards_to_player(conn, cnum):
-    pass
+def card_transfer(conn, chr1, chr2, cnum):
+    sql_get_src_cards = ' SELECT card_rank, card_suit FROM ' + chr1 + ' WHERE id = ?;'
+    sql_add_cards_dst = ' INSERT INTO ' + chr2 + '(card_rank, card_suit) VALUES (?, ?) '
+    sql_del_src_cards = ' DELETE FROM ' + chr1 + ' WHERE id = ?;'
+    cur = conn.cursor()
+    for n in range(0, cnum):
+        sql_card_id = (n + 1,)
+        cur.execute(sql_get_src_cards, sql_card_id)
+
+        cards_trf = cur.fetchone()
+        cur.execute(sql_add_cards_dst, cards_trf)
+        cur.execute(sql_del_src_cards, sql_card_id)
+
+    conn.commit()
+
