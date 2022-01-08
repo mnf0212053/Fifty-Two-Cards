@@ -41,7 +41,7 @@ def create_dealer(conn):
         card_suit text
     ); """
     sql_insert_stats = ''' INSERT INTO stats(character, total_cards) VALUES (?, ?) '''
-    sql_data_stats = ('Dealer', 0)
+    sql_data_stats = ('dealer', 0)
 
     cur = conn.cursor()
     cur.execute(sql_delete_table)
@@ -57,7 +57,7 @@ def create_player(conn):
         card_suit text
     ); """
     sql_insert_stats = ''' INSERT INTO stats(character, total_cards) VALUES (?, ?) '''
-    sql_data_stats = ('Player', 0)
+    sql_data_stats = ('player', 0)
 
     cur = conn.cursor()
     cur.execute(sql_delete_table)
@@ -125,7 +125,36 @@ def shuffle_cards(conn):
     conn.commit()
 
 def get_card_amount(conn, chr):
-    pass
+    sql_chr_search = '''SELECT total_cards FROM stats WHERE character = ?; '''
+
+    cur = conn.cursor()
+    cur.execute(sql_chr_search, (chr,))
+
+    chr_data = cur.fetchall()
+    if len(chr_data) == 0:
+        print('Character Not Found')
+        return -1
+    else:
+        for x in chr_data:
+            card_amount = x[0]
+        return card_amount
+
+def update_stats(conn):
+    sql_chr_count = '''SELECT character FROM stats; '''
+    sql_update_stats = ''' UPDATE stats SET total_cards = ? WHERE character = ?; '''
+
+    cur = conn.cursor()
+    cur.execute(sql_chr_count)
+
+    chr_data = cur.fetchall()
+    for x in chr_data:
+        sql_look_chr = 'SELECT COUNT(*) FROM ' + x[0] +'; '
+        cur.execute(sql_look_chr)
+        t_cards = cur.fetchone()
+
+        sql_update_data = (t_cards[0], x[0])
+        cur.execute(sql_update_stats, sql_update_data)
+    conn.commit()
 
 def give_cards_to_player(conn, cnum):
     pass
