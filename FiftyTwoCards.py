@@ -2,21 +2,16 @@ import sqlite3
 import numpy as np
 import os
 
-def db_connect():
-    # Connect to database
-    """ db_connect()
-        Connects into 'card52.db' database. If it doesn't exist, creates it instead.
-        The database file will be created based on the directory. Make sure to set the current directory to the same file as the app file to track the database easier.
-        Returns sql connection """
-    return sqlite3.connect("card52.db")
+PATH = r"card52.db"
 
-
-def create_cards(conn):
-    """ create_cards(conn)
-        Creates a 'cards' table into the database connected by 'conn' connection and fills it with a set of 52-card deck.
+def create_cards():
+    """ create_cards()
+        Creates a 'cards' table into the database and fills it with a set of 52-card deck.
         The table consists of id (primary key), card rank, card suit, and card possession (which character possesses the card).
         The preceding table will be deleted.
     """
+    conn = sqlite3.connect(PATH)
+
     sql_delete_table = ''' DROP TABLE IF EXISTS cards; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS cards(
         id integer PRIMARY KEY,
@@ -45,12 +40,13 @@ def create_cards(conn):
             cur.execute(sql_insert, sql_cards_data)
     conn.commit()
 
-def create_dealer(conn):
-    """ create_dealer(conn)
-        Creates a 'dealer' table into the database connected by 'conn' connection.
+def create_dealer():
+    """ create_dealer()
+        Creates a 'dealer' table into the database.
         The table consists of id (primary key), card rank, and card suit the dealer possesses.
         The preceding table will be deleted.
     """
+    conn = sqlite3.connect(PATH)
     sql_delete_table = ''' DROP TABLE IF EXISTS dealer; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS dealer(
         id integer PRIMARY KEY,
@@ -66,12 +62,13 @@ def create_dealer(conn):
     cur.execute(sql_insert_stats, sql_data_stats)
     conn.commit()
 
-def create_player(conn):
-    """ create_player(conn)
-        Creates a 'player' table into the database connected by 'conn' connection.
+def create_player():
+    """ create_player()
+        Creates a 'player' table into the database.
         The table consists of id (primary key), card rank, and card suit the player possesses.
         The preceding table will be deleted.
     """
+    conn = sqlite3.connect(PATH)
     sql_delete_table = ''' DROP TABLE IF EXISTS player; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS player(
         id integer PRIMARY KEY,
@@ -87,12 +84,13 @@ def create_player(conn):
     cur.execute(sql_insert_stats, sql_data_stats)
     conn.commit()
 
-def create_custom(conn, chr):
-    """ create_custom(conn, chr)
-        Creates a custom 'chr' character table into the database connected by 'conn' connection.
+def create_custom(chr):
+    """ create_custom( chr)
+        Creates a custom 'chr' character table into the database.
         The table consists of id (primary key), card rank, and card suit the character possesses.
         The preceding table will be deleted.
     """
+    conn = sqlite3.connect(PATH)
     sql_delete_table = ' DROP TABLE IF EXISTS ' + chr + '; '
     sql_create = """ CREATE TABLE IF NOT EXISTS """ + chr + """(
         id integer PRIMARY KEY,
@@ -108,12 +106,13 @@ def create_custom(conn, chr):
     cur.execute(sql_insert_stats, sql_data_stats)
     conn.commit()
 
-def create_stats(conn):
-    """ create_stats(conn)
-        Creates a 'stats' table into the database connected by 'conn' connection.
+def create_stats():
+    """ create_stats()
+        Creates a 'stats' table into the database.
         The table consists of id (primary key), character list (e.g. dealer, player), and the total cards the corresponding character possesses.
         The preceding table will be deleted.
     """
+    conn = sqlite3.connect(PATH)
     sql_delete_table = ''' DROP TABLE IF EXISTS stats; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS stats(
         id integer PRIMARY KEY,
@@ -125,22 +124,21 @@ def create_stats(conn):
     cur.execute(sql_delete_table)
     cur.execute(sql_create)
 
-def delete_everything(conn):
-    """ delete_everything(conn)
-        Disconnects the 'conn' connection and remove the database file from computer.
+def delete_everything():
+    """ delete_everything()
+        Remove the database file from computer.
     """
-    conn.close()
-    if os.path.exists("card52.db"):
-        os.remove("card52.db")
+    if os.path.exists(PATH):
+        os.remove(PATH)
 
-def init(conn):
-    """ init(conn)
-        Creates 'cards', 'stats',,'dealer', and 'player' tables respectively to the database connected by 'conn' connection.
+def init():
+    """ init()
+        Creates 'cards', 'stats',,'dealer', and 'player' tables respectively to the database.
     """
-    create_cards(conn)
-    create_stats(conn)
-    create_dealer(conn)
-    create_player(conn)
+    create_cards()
+    create_stats()
+    create_dealer()
+    create_player()
 
 def shuffle_numbers(cmnt = 52):
     rand_nums = []
@@ -161,11 +159,12 @@ def shuffle_numbers(cmnt = 52):
 
     return rand_52
 
-def get_card(conn, cid):
-    """ get_card(conn, cid)
-        Retrieves a card from 'cards' table in the database connected by conn connection with a specific id (cid).
+def get_card(cid):
+    """ get_card( cid)
+        Retrieves a card from 'cards' table in the database with a specific id (cid).
         Returns a tuple containing the card informations.
     """
+    conn = sqlite3.connect(PATH)
     sql_retrieve = ''' SELECT rank, suit FROM cards WHERE id = ?; '''
 
     cur = conn.cursor()
@@ -173,11 +172,12 @@ def get_card(conn, cid):
 
     return cur.fetchall()
 
-def shuffle_cards_dealer(conn):
-    """ shuffle_cards_dealer(conn)
-        Fills the 'dealer' table connected in 'conn' connection with the entire 52-card deck, and shuffle the cards.
+def shuffle_cards_dealer():
+    """ shuffle_cards_dealer()
+        Fills the 'dealer' table with the entire 52-card deck, and shuffle the cards.
         The preceding cards will be deleted.
     """
+    conn = sqlite3.connect(PATH)
     sql_delete_dealer_cards = ''' DELETE FROM dealer '''
 
     card_id_lists = shuffle_numbers()
@@ -187,15 +187,16 @@ def shuffle_cards_dealer(conn):
     cur.execute(sql_delete_dealer_cards)
 
     for i in range(0, len(card_id_lists)):
-        sql_get_card = get_card(conn, card_id_lists[i])
+        sql_get_card = get_card(card_id_lists[i])
         cur.execute(sql_insert, sql_get_card[0])
     conn.commit()
 
-def get_card_amount(conn, chr):
-    """ get_card_amount(conn, chr)
+def get_card_amount(chr):
+    """ get_card_amount( chr)
         Returns amount of cards possessed by 'chr'.
-        Returns -1 if the 'chr' character doesn't exist in the database connected by 'conn' connection.
+        Returns -1 if the 'chr' character doesn't exist in the database.
     """
+    conn = sqlite3.connect(PATH)
     sql_chr_search = '''SELECT total_cards FROM stats WHERE character = ?; '''
 
     cur = conn.cursor()
@@ -210,10 +211,11 @@ def get_card_amount(conn, chr):
             card_amount = x[0]
         return card_amount
 
-def update_stats(conn):
-    """ update_stats(conn)
-        Updates the 'stats' table in the database connected by 'conn' connection.
+def update_stats():
+    """ update_stats()
+        Updates the 'stats' table in the database.
     """
+    conn = sqlite3.connect(PATH)
     sql_chr_count = '''SELECT character FROM stats; '''
     sql_update_stats = ''' UPDATE stats SET total_cards = ? WHERE character = ?; '''
 
@@ -230,10 +232,11 @@ def update_stats(conn):
         cur.execute(sql_update_stats, sql_update_data)
     conn.commit()
 
-def card_transfer(conn, chr1, chr2, cnum):
-    """ card_transfer(conn, chr1, chr2, cnum)
+def card_transfer(chr1, chr2, cnum):
+    """ card_transfer( chr1, chr2, cnum)
         Performs a card transaction with the amount of 'cnum' from character 'chr1' to character 'chr2'.
     """
+    conn = sqlite3.connect(PATH)
     sql_get_src_cards = ' SELECT card_rank, card_suit FROM ' + chr1 + ' WHERE id = ?;'
     sql_add_cards_dst = ' INSERT INTO ' + chr2 + '(card_rank, card_suit) VALUES (?, ?) '
     sql_del_src_cards = ' DELETE FROM ' + chr1 + ' WHERE id = ?;'
@@ -281,10 +284,11 @@ def render_cards(curs, sql_script, total_cards, min_id):
         print('-----', end = '')
     print('-')
 
-def show_cards(conn, chr):
-    """ show_cards(conn, chr)
-        Display the cards possessed by the 'chr' character. Requires 'conn' connection argument the database is used.
+def show_cards(chr):
+    """ show_cards( chr)
+        Display the cards possessed by the 'chr' character.
     """
+    conn = sqlite3.connect(PATH)
     sql_get_cards = ' SELECT card_rank, card_suit FROM ' + chr +' WHERE id = ?; '
     sql_get_total_cards = ' SELECT COUNT(*) FROM ' + chr + '; '
     sql_get_min_id = ' SELECT MIN(id) FROM ' + chr + '; '
@@ -300,11 +304,11 @@ def show_cards(conn, chr):
     print(chr + '\'s card')
     render_cards(cur, sql_get_cards, n_cards[0], n_min[0])
 
-def reveal_cards(conn, chr, cmnt):
-    """ reveal_cards(conn, chr, cmnt)
-        Display a 'cmnt' amount of cards possessed by 'chr', starting from the least id number.
-        Requires 'conn' connection argument the database is used.
+def reveal_cards(chr, cmnt):
+    """ reveal_cards( chr, cmnt)
+        Display a 'cmnt' amount of cards possessed by 'chr', starting from the least id number.        
     """
+    conn = sqlite3.connect(PATH)
     sql_select = ' SELECT card_rank, card_suit FROM ' + chr + ' WHERE id = ?;'
     sql_select_min = ' SELECT MIN(id) FROM ' + chr
 
