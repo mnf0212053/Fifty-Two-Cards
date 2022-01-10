@@ -87,6 +87,27 @@ def create_player(conn):
     cur.execute(sql_insert_stats, sql_data_stats)
     conn.commit()
 
+def create_custom(conn, chr):
+    """ create_custom(conn, chr)
+        Creates a custom 'chr' character table into the database connected by 'conn' connection.
+        The table consists of id (primary key), card rank, and card suit the character possesses.
+        The preceding table will be deleted.
+    """
+    sql_delete_table = ' DROP TABLE IF EXISTS ' + chr + '; '
+    sql_create = """ CREATE TABLE IF NOT EXISTS """ + chr + """(
+        id integer PRIMARY KEY,
+        card_rank text,
+        card_suit text
+    ); """
+    sql_insert_stats = ''' INSERT INTO stats(character, total_cards) VALUES (?, ?) '''
+    sql_data_stats = (chr, 0)
+
+    cur = conn.cursor()
+    cur.execute(sql_delete_table)
+    cur.execute(sql_create)
+    cur.execute(sql_insert_stats, sql_data_stats)
+    conn.commit()
+
 def create_stats(conn):
     """ create_stats(conn)
         Creates a 'stats' table into the database connected by 'conn' connection.
