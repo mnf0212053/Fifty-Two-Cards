@@ -119,7 +119,7 @@ def shuffle_cards(conn):
     cur = conn.cursor()
     cur.execute(sql_delete_dealer_cards)
 
-    for i in range(0, 52):
+    for i in range(0, len(card_id_lists)):
         sql_get_card = get_card(conn, card_id_lists[i])
         cur.execute(sql_insert, sql_get_card[0])
     conn.commit()
