@@ -2,9 +2,20 @@ import sqlite3
 import numpy as np
 
 def db_connect():
+    # Connect to database
+    """ db_connect()
+        Connects into 'card52.db' database. If it doesn't exist, creates it instead.
+        The database file will be created based on the directory. Make sure to set the current directory to the same file as the app file to track the database easier.
+        Returns sql connection """
     return sqlite3.connect("card52.db")
 
+
 def create_cards(conn):
+    """ create_cards(conn)
+        Creates a 'cards' table into the database connected by 'conn' connection and fills it with a set of 52-card deck.
+        The table consists of id (primary key), card rank, card suit, and card possession (which character possesses the card).
+        The preceding table will be deleted.
+    """
     sql_delete_table = ''' DROP TABLE IF EXISTS cards; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS cards(
         id integer PRIMARY KEY,
@@ -34,6 +45,11 @@ def create_cards(conn):
     conn.commit()
 
 def create_dealer(conn):
+    """ create_dealer(conn)
+        Creates a 'dealer' table into the database connected by 'conn' connection.
+        The table consists of id (primary key), card rank, and card suit the dealer possesses.
+        The preceding table will be deleted.
+    """
     sql_delete_table = ''' DROP TABLE IF EXISTS dealer; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS dealer(
         id integer PRIMARY KEY,
@@ -50,6 +66,11 @@ def create_dealer(conn):
     conn.commit()
 
 def create_player(conn):
+    """ create_player(conn)
+        Creates a 'player' table into the database connected by 'conn' connection.
+        The table consists of id (primary key), card rank, and card suit the player possesses.
+        The preceding table will be deleted.
+    """
     sql_delete_table = ''' DROP TABLE IF EXISTS player; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS player(
         id integer PRIMARY KEY,
@@ -66,6 +87,11 @@ def create_player(conn):
     conn.commit()
 
 def create_stats(conn):
+    """ create_stats(conn)
+        Creates a 'stats' table into the database connected by 'conn' connection.
+        The table consists of id (primary key), character list (e.g. dealer, player), and the total cards the corresponding character possesses.
+        The preceding table will be deleted.
+    """
     sql_delete_table = ''' DROP TABLE IF EXISTS stats; '''
     sql_create = """ CREATE TABLE IF NOT EXISTS stats(
         id integer PRIMARY KEY,
@@ -78,6 +104,9 @@ def create_stats(conn):
     cur.execute(sql_create)
 
 def init(conn):
+    """ init(conn)
+        Creates 'cards', 'stats',,'dealer', and 'player' tables respectively to the database connected by 'conn' connection.
+    """
     create_cards(conn)
     create_stats(conn)
     create_dealer(conn)
@@ -103,6 +132,10 @@ def shuffle_numbers(cmnt = 52):
     return rand_52
 
 def get_card(conn, cid):
+    """ get_card(conn, cid)
+        Retrieves a card from 'cards' table in the database connected by conn connection with a specific id (cid).
+        Returns a tuple containing the card informations.
+    """
     sql_retrieve = ''' SELECT rank, suit FROM cards WHERE id = ?; '''
 
     cur = conn.cursor()
@@ -110,7 +143,11 @@ def get_card(conn, cid):
 
     return cur.fetchall()
 
-def shuffle_cards(conn):
+def shuffle_cards_dealer(conn):
+    """ shuffle_cards_dealer(conn)
+        Fills the 'dealer' table connected in 'conn' connection with the entire 52-card deck, and shuffle the cards.
+        The preceding cards will be deleted.
+    """
     sql_delete_dealer_cards = ''' DELETE FROM dealer '''
 
     card_id_lists = shuffle_numbers()
@@ -125,6 +162,10 @@ def shuffle_cards(conn):
     conn.commit()
 
 def get_card_amount(conn, chr):
+    """ get_card_amount(conn, chr)
+        Returns amount of cards possessed by 'chr'.
+        Returns -1 if the 'chr' character doesn't exist in the database connected by 'conn' connection.
+    """
     sql_chr_search = '''SELECT total_cards FROM stats WHERE character = ?; '''
 
     cur = conn.cursor()
@@ -140,6 +181,9 @@ def get_card_amount(conn, chr):
         return card_amount
 
 def update_stats(conn):
+    """ update_stats(conn)
+        Updates the 'stats' table in the database connected by 'conn' connection.
+    """
     sql_chr_count = '''SELECT character FROM stats; '''
     sql_update_stats = ''' UPDATE stats SET total_cards = ? WHERE character = ?; '''
 
@@ -157,6 +201,9 @@ def update_stats(conn):
     conn.commit()
 
 def card_transfer(conn, chr1, chr2, cnum):
+    """ card_transfer(conn, chr1, chr2, cnum)
+        Performs a card transaction with the amount of 'cnum' from character 'chr1' to character 'chr2'.
+    """
     sql_get_src_cards = ' SELECT card_rank, card_suit FROM ' + chr1 + ' WHERE id = ?;'
     sql_add_cards_dst = ' INSERT INTO ' + chr2 + '(card_rank, card_suit) VALUES (?, ?) '
     sql_del_src_cards = ' DELETE FROM ' + chr1 + ' WHERE id = ?;'
@@ -177,6 +224,14 @@ def card_transfer(conn, chr1, chr2, cnum):
     conn.commit()
 
 def render_cards(curs, sql_script, total_cards, min_id):
+    """ render_cards(curs, sql_script, total_cards, min_id)
+        Generates the more user-friendly card interface that shows the cards to be displayed.
+        Requires:
+        1. The cursor argument 'curs' from a connection
+        2. An 'sql_script' which contains an SQL command to select card from a character
+        3. The total cards (total_cards) to be displayed
+        4. The least 'id' number from the character's database
+    """
     for i in range(0, total_cards):
         print('-----', end = '')
     print('-')
@@ -197,6 +252,9 @@ def render_cards(curs, sql_script, total_cards, min_id):
     print('-')
 
 def show_cards(conn):
+    """ show_cards(conn)
+        Display the cards possessed by the player. Requires 'conn' connection argument the database is used.
+    """
     sql_get_cards = ''' SELECT card_rank, card_suit FROM player WHERE id = ?; '''
     sql_get_total_cards = ''' SELECT COUNT(*) FROM player; '''
     sql_get_min_id = ''' SELECT MIN(id) FROM player; '''
@@ -212,6 +270,10 @@ def show_cards(conn):
     render_cards(cur, sql_get_cards, n_cards[0], n_min[0])
 
 def reveal_cards(conn, chr, cmnt):
+    """ reveal_cards(conn, chr, cmnt)
+        Display a 'cmnt' amount of cards possessed by 'chr', starting from the least id number.
+        Requires 'conn' connection argument the database is used.
+    """
     sql_select = ' SELECT card_rank, card_suit FROM ' + chr + ' WHERE id = ?;'
     sql_select_min = ' SELECT MIN(id) FROM ' + chr
 
