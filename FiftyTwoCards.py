@@ -1,5 +1,6 @@
 import sqlite3
 import numpy as np
+import os
 
 def db_connect():
     # Connect to database
@@ -111,6 +112,13 @@ def init(conn):
     create_stats(conn)
     create_dealer(conn)
     create_player(conn)
+
+def delete_everything(conn):
+    """ delete_everything(conn)
+        Disconnects the 'conn' connection and remove the database file from computer.
+    """
+    conn.close()
+    os.remove("card52.db")
 
 def shuffle_numbers(cmnt = 52):
     rand_nums = []
