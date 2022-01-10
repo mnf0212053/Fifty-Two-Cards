@@ -18,9 +18,9 @@ def create_cards(conn):
     cur.execute(sql_create)
     
     sql_insert = ''' INSERT INTO cards(rank, suit, possession) VALUES (?, ?, ?) '''
-
-    suits = ('Heart', 'Diamond', 'Club', 'Spade')
-    royal_ranks = ('Ace', 'King', 'Queen', 'Jack')
+    
+    suits = ('\u0003', '\u0004', '\u0005', '\u0006')
+    royal_ranks = ('A', 'K', 'Q', 'J')
 
     for royal in royal_ranks:
         for suit in suits:
@@ -171,3 +171,16 @@ def card_transfer(conn, chr1, chr2, cnum):
 
     conn.commit()
 
+def show_cards(conn):
+    sql_get_cards = ''' SELECT card_rank, card_suit FROM player '''
+
+    cur = conn.cursor()
+    cur.execute(sql_get_cards)
+
+    cards = cur.fetchall()
+
+    print('|    |    |    |    |    |')
+    for c in cards:
+        print('| ' + c[0] + c[1], end = ' ')
+    print('|')
+    print('|    |    |    |    |    |')
