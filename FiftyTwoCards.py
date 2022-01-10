@@ -20,16 +20,16 @@ def create_cards(conn):
     sql_insert = ''' INSERT INTO cards(rank, suit, possession) VALUES (?, ?, ?) '''
     
     suits = ('\u0003', '\u0004', '\u0005', '\u0006')
-    royal_ranks = ('A', 'K', 'Q', 'J')
+    royal_ranks = (' A', ' K', ' Q', ' J', '10')
 
     for royal in royal_ranks:
         for suit in suits:
             sql_cards_data = (royal, suit, 'None')
             cur.execute(sql_insert, sql_cards_data)
 
-    for lower_ranks in range(2, 11):
+    for lower_ranks in range(2, 10):
         for suit in suits:
-            sql_cards_data = (str(12 - lower_ranks), suit, 'None')
+            sql_cards_data = (' ' + str(11 - lower_ranks), suit, 'None')
             cur.execute(sql_insert, sql_cards_data)
     conn.commit()
 
@@ -160,9 +160,14 @@ def card_transfer(conn, chr1, chr2, cnum):
     sql_get_src_cards = ' SELECT card_rank, card_suit FROM ' + chr1 + ' WHERE id = ?;'
     sql_add_cards_dst = ' INSERT INTO ' + chr2 + '(card_rank, card_suit) VALUES (?, ?) '
     sql_del_src_cards = ' DELETE FROM ' + chr1 + ' WHERE id = ?;'
+    sql_select_min_src = ' SELECT MIN(id) FROM ' + chr1
     cur = conn.cursor()
+
+    cur.execute(sql_select_min_src)
+
+    minid = cur.fetchone()
     for n in range(0, cnum):
-        sql_card_id = (n + 1,)
+        sql_card_id = (n + minid[0],)
         cur.execute(sql_get_src_cards, sql_card_id)
 
         cards_trf = cur.fetchone()
@@ -171,16 +176,66 @@ def card_transfer(conn, chr1, chr2, cnum):
 
     conn.commit()
 
+def render_cards(curs, sql_script, total_cards, min_id):
+    for i in range(0, total_cards):
+        print('-----', end = '')
+    print('-')
+    for i in range(0, total_cards):
+        print('|    ', end = '')
+    print('|')
+    for c in range(0, total_cards):
+        curs.execute(sql_script, (c + min_id,))
+
+        cards = curs.fetchone()
+        print('|' + cards[0] + cards[1], end = ' ')
+    print('|')
+    for i in range(0, total_cards):
+        print('|    ', end = '')
+    print('|')
+    for i in range(0, total_cards):
+        print('-----', end = '')
+    print('-')
+
 def show_cards(conn):
-    sql_get_cards = ''' SELECT card_rank, card_suit FROM player '''
+    sql_get_cards = ''' SELECT card_rank, card_suit FROM player WHERE id = ?; '''
+    sql_get_total_cards = ''' SELECT COUNT(*) FROM player; '''
+    sql_get_min_id = ''' SELECT MIN(id) FROM player; '''
 
     cur = conn.cursor()
-    cur.execute(sql_get_cards)
 
-    cards = cur.fetchall()
+    cur.execute(sql_get_total_cards)
+    n_cards = cur.fetchone()
 
-    print('|    |    |    |    |    |')
-    for c in cards:
-        print('| ' + c[0] + c[1], end = ' ')
+    cur.execute(sql_get_min_id)
+    n_min = cur.fetchone()
+
+    render_cards(cur, sql_get_cards, n_cards[0], n_min[0])
+
+def reveal_cards(conn, chr, cmnt):
+    sql_select = ' SELECT card_rank, card_suit FROM ' + chr + ' WHERE id = ?;'
+    sql_select_min = ' SELECT MIN(id) FROM ' + chr
+
+    cur = conn.cursor()
+
+    cur.execute(sql_select_min)
+    minid = cur.fetchone()
+    
+    for i in range(0, cmnt):
+        print('-----', end = '')
+    print('-')
+    for i in range(0, cmnt):
+        print('|    ', end = '')
     print('|')
-    print('|    |    |    |    |    |')
+    for c in range(0, cmnt):
+        cur.execute(sql_select, (c + minid[0],))
+
+        cards = cur.fetchone()
+        print('|' + cards[0] + cards[1], end = ' ')
+    print('|')
+    for i in range(0, cmnt):
+        print('|    ', end = '')
+    print('|')
+    for i in range(0, cmnt):
+        print('-----', end = '')
+    print('-')
+    
