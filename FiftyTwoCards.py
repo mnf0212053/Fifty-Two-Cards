@@ -83,10 +83,10 @@ def init(conn):
     create_dealer(conn)
     create_player(conn)
 
-def shuffle_numbers():
+def shuffle_numbers(cmnt = 52):
     rand_nums = []
     
-    for i in range(0, 52):
+    for i in range(0, cmnt):
         rand_num = np.random.randint(1, 1000)
         while rand_nums.__contains__(rand_num):
             rand_num = np.random.randint(1, 1000)
