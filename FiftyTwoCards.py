@@ -125,6 +125,14 @@ def create_stats(conn):
     cur.execute(sql_delete_table)
     cur.execute(sql_create)
 
+def delete_everything(conn):
+    """ delete_everything(conn)
+        Disconnects the 'conn' connection and remove the database file from computer.
+    """
+    conn.close()
+    if os.path.exists("card52.db"):
+        os.remove("card52.db")
+
 def init(conn):
     """ init(conn)
         Creates 'cards', 'stats',,'dealer', and 'player' tables respectively to the database connected by 'conn' connection.
@@ -133,13 +141,6 @@ def init(conn):
     create_stats(conn)
     create_dealer(conn)
     create_player(conn)
-
-def delete_everything(conn):
-    """ delete_everything(conn)
-        Disconnects the 'conn' connection and remove the database file from computer.
-    """
-    conn.close()
-    os.remove("card52.db")
 
 def shuffle_numbers(cmnt = 52):
     rand_nums = []
@@ -280,13 +281,13 @@ def render_cards(curs, sql_script, total_cards, min_id):
         print('-----', end = '')
     print('-')
 
-def show_cards(conn):
-    """ show_cards(conn)
-        Display the cards possessed by the player. Requires 'conn' connection argument the database is used.
+def show_cards(conn, chr):
+    """ show_cards(conn, chr)
+        Display the cards possessed by the 'chr' character. Requires 'conn' connection argument the database is used.
     """
-    sql_get_cards = ''' SELECT card_rank, card_suit FROM player WHERE id = ?; '''
-    sql_get_total_cards = ''' SELECT COUNT(*) FROM player; '''
-    sql_get_min_id = ''' SELECT MIN(id) FROM player; '''
+    sql_get_cards = ' SELECT card_rank, card_suit FROM ' + chr +' WHERE id = ?; '
+    sql_get_total_cards = ' SELECT COUNT(*) FROM ' + chr + '; '
+    sql_get_min_id = ' SELECT MIN(id) FROM ' + chr + '; '
 
     cur = conn.cursor()
 
@@ -296,6 +297,7 @@ def show_cards(conn):
     cur.execute(sql_get_min_id)
     n_min = cur.fetchone()
 
+    print(chr + '\'s card')
     render_cards(cur, sql_get_cards, n_cards[0], n_min[0])
 
 def reveal_cards(conn, chr, cmnt):
