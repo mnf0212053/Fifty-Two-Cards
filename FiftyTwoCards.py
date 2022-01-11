@@ -44,6 +44,7 @@ def create_dealer():
     """ create_dealer()
         Creates a 'dealer' table into the database.
         The table consists of id (primary key), card rank, and card suit the dealer possesses.
+        The created dealer will be inputed into the stats table.
         The preceding table will be deleted.
     """
     conn = sqlite3.connect(PATH)
@@ -66,6 +67,7 @@ def create_player():
     """ create_player()
         Creates a 'player' table into the database.
         The table consists of id (primary key), card rank, and card suit the player possesses.
+        The created player will be inputed into the stats table.
         The preceding table will be deleted.
     """
     conn = sqlite3.connect(PATH)
@@ -75,8 +77,8 @@ def create_player():
         card_rank text,
         card_suit text
     ); """
-    sql_insert_stats = ''' INSERT INTO stats(character, total_cards) VALUES (?, ?) '''
-    sql_data_stats = ('player', 0)
+    sql_insert_stats = ''' INSERT INTO stats(character, total_cards,chips) VALUES (?, ?, ?) '''
+    sql_data_stats = ('player', 0, 0)
 
     cur = conn.cursor()
     cur.execute(sql_delete_table)
@@ -88,6 +90,7 @@ def create_custom(chr):
     """ create_custom( chr)
         Creates a custom 'chr' character table into the database.
         The table consists of id (primary key), card rank, and card suit the character possesses.
+        The created character will be inputed into the stats table.
         The preceding table will be deleted.
     """
     conn = sqlite3.connect(PATH)
@@ -97,8 +100,8 @@ def create_custom(chr):
         card_rank text,
         card_suit text
     ); """
-    sql_insert_stats = ''' INSERT INTO stats(character, total_cards) VALUES (?, ?) '''
-    sql_data_stats = (chr, 0)
+    sql_insert_stats = ''' INSERT INTO stats(character, total_cards, chips) VALUES (?, ?, ?) '''
+    sql_data_stats = (chr, 0, 0)
 
     cur = conn.cursor()
     cur.execute(sql_delete_table)
@@ -109,7 +112,7 @@ def create_custom(chr):
 def create_stats():
     """ create_stats()
         Creates a 'stats' table into the database.
-        The table consists of id (primary key), character list (e.g. dealer, player), and the total cards the corresponding character possesses.
+        The table consists of id (primary key), character list (e.g. dealer, player), the total cards and chips the corresponding character possesses.
         The preceding table will be deleted.
     """
     conn = sqlite3.connect(PATH)
@@ -117,7 +120,8 @@ def create_stats():
     sql_create = """ CREATE TABLE IF NOT EXISTS stats(
         id integer PRIMARY KEY,
         character text,
-        total_cards integer
+        total_cards integer,
+        chips integer
     ); """
 
     cur = conn.cursor()
@@ -158,6 +162,15 @@ def shuffle_numbers(cmnt = 52):
                 rand_52.append(j + 1)
 
     return rand_52
+
+def add_chips(chr, nch):
+    sql_update = '''UPDATE stats SET chips = ? WHERE character = ?;'''
+    sql_data = (nch, chr)
+
+    conn = sqlite3.connect(PATH)
+    cur = conn.cursor()
+    cur.execute(sql_update, sql_data)
+    conn.commit()
 
 def get_card(cid):
     """ get_card( cid)
