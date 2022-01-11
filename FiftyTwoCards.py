@@ -164,6 +164,9 @@ def shuffle_numbers(cmnt = 52):
     return rand_52
 
 def add_chips(chr, nch):
+    """ add_chips(chr, nch)
+        Adds 'nch' amount of chips to 'chr' character.
+    """
     sql_update = '''UPDATE stats SET chips = ? WHERE character = ?;'''
     sql_data = (nch, chr)
 
@@ -171,6 +174,40 @@ def add_chips(chr, nch):
     cur = conn.cursor()
     cur.execute(sql_update, sql_data)
     conn.commit()
+
+def chips_transfer(chr1, chr2, nch):
+    """ chips_transfer(chr1, chr2, nch)
+        Transfer 'nch' amount of chips from 'chr1' character to 'chr2' character.
+    """
+    sql_get_chips = ''' SELECT chips FROM stats WHERE character = ?; '''
+    sql_update_chips = ''' UPDATE stats SET chips = ? WHERE character = ?; '''
+
+    conn = sqlite3.connect(PATH)
+    cur = conn.cursor()
+
+    cur.execute(sql_get_chips, (chr1,))
+    chr1_chips = cur.fetchone()
+
+    cur.execute(sql_get_chips, (chr2,))
+    chr2_chips = cur.fetchone()
+    
+    cur.execute(sql_update_chips, (chr1_chips[0] - nch, chr1))
+    cur.execute(sql_update_chips, (chr2_chips[0] + nch, chr2))
+
+    conn.commit()
+
+def get_chips(chr):
+    """ get_chips(chr)
+        Returns the amount of chips that 'chr' character possess.
+    """
+    sql_get_chips = ''' SELECT chips FROM stats WHERE character = ?; '''
+    
+    conn = sqlite3.connect(PATH)
+    cur = conn.cursor()
+    cur.execute(sql_get_chips, (chr,))
+
+    chips = cur.fetchone()
+    return chips[0]
 
 def get_card(cid):
     """ get_card( cid)
